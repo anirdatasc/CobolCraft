@@ -1,0 +1,62 @@
+graph TB
+    subgraph "Client Layer"
+        WEB[Web Browser]
+        MOBILE[Mobile App]
+        API_CLIENT[API Clients]
+    end
+    
+    subgraph "Presentation Layer"
+        WEB_UI[Web UI<br/>React/Angular]
+        API_GATEWAY[API Gateway<br/>Spring Cloud Gateway]
+    end
+    
+    subgraph "Application Layer"
+        REST_API[REST API<br/>Spring Boot]
+        BATCH[Batch Services<br/>Spring Batch]
+        BUSINESS_LOGIC[Business Logic Layer]
+    end
+    
+    subgraph "Data Layer"
+        JPA[JPA/Hibernate]
+        CACHE[Redis Cache]
+        FILE_IO[File I/O Services]
+    end
+    
+    subgraph "Data Storage"
+        DB[(Relational Database<br/>PostgreSQL/MySQL)]
+        FILE_STORE[(File Storage)]
+        LEGACY_DB[(Legacy Database<br/>During Migration)]
+    end
+    
+    subgraph "External Systems"
+        EXT_API[External APIs]
+        MQ[Message Queue<br/>RabbitMQ/Kafka]
+    end
+    
+    subgraph "Infrastructure"
+        MONITOR[Monitoring<br/>Prometheus/Grafana]
+        LOG[Logging<br/>ELK Stack]
+        CI_CD[CI/CD<br/>Jenkins/GitLab]
+    end
+    
+    WEB --> WEB_UI
+    MOBILE --> API_GATEWAY
+    API_CLIENT --> API_GATEWAY
+    API_GATEWAY --> REST_API
+    WEB_UI --> REST_API
+    REST_API --> BUSINESS_LOGIC
+    BATCH --> BUSINESS_LOGIC
+    BUSINESS_LOGIC --> JPA
+    BUSINESS_LOGIC --> CACHE
+    BUSINESS_LOGIC --> FILE_IO
+    JPA --> DB
+    FILE_IO --> FILE_STORE
+    BUSINESS_LOGIC --> EXT_API
+    BUSINESS_LOGIC --> MQ
+    JPA -.->|Migration Period| LEGACY_DB
+    
+    style REST_API fill:#667eea,color:#fff
+    style BUSINESS_LOGIC fill:#48bb78,color:#fff
+    style DB fill:#ed8936,color:#fff
+    style API_GATEWAY fill:#f56565,color:#fff
+

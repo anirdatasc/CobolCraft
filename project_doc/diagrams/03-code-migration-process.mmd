@@ -1,0 +1,19 @@
+flowchart LR
+    Start([COBOL Code]) --> Analyze[Analyze COBOL Program]
+    Analyze --> Map[Map to Java Structure]
+    Map --> Design[Design Java Classes]
+    Design --> Implement[Implement Java Code]
+    Implement --> Review[Code Review]
+    Review --> ReviewOK{Review OK?}
+    ReviewOK -->|No| Implement
+    ReviewOK -->|Yes| Test[Unit Test]
+    Test --> TestOK{Test Pass?}
+    TestOK -->|No| Implement
+    TestOK -->|Yes| Document[Document Changes]
+    Document --> End([Java Code Complete])
+    
+    style Start fill:#FF6B6B
+    style End fill:#90EE90
+    style ReviewOK fill:#FFD700
+    style TestOK fill:#FFD700
+

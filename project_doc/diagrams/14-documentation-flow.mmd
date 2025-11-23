@@ -1,0 +1,22 @@
+flowchart LR
+    Start([Documentation Start]) --> Create[Create Document]
+    Create --> Review[Technical Review]
+    Review --> ReviewOK{Review Passed?}
+    ReviewOK -->|No| Revise[Revise Document]
+    Revise --> Review
+    ReviewOK -->|Yes| Approve[Stakeholder Approval]
+    Approve --> ApproveOK{Approved?}
+    ApproveOK -->|No| Revise
+    ApproveOK -->|Yes| Version[Version Control]
+    Version --> Publish[Publish to Repository]
+    Publish --> Maintain[Maintain & Update]
+    Maintain --> Update{Updates Needed?}
+    Update -->|Yes| Create
+    Update -->|No| Archive[Archive When Obsolete]
+    Archive --> End([Document Lifecycle Complete])
+    
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style ReviewOK fill:#FFD700
+    style ApproveOK fill:#FFD700
+

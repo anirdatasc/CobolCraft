@@ -1,0 +1,38 @@
+flowchart TD
+    Start([Testing Start]) --> Unit[Unit Testing]
+    Unit --> UnitPass{All Pass?}
+    UnitPass -->|No| FixUnit[Fix Unit Issues]
+    FixUnit --> Unit
+    UnitPass -->|Yes| Integration[Integration Testing]
+    Integration --> IntPass{All Pass?}
+    IntPass -->|No| FixInt[Fix Integration Issues]
+    FixInt --> Integration
+    IntPass -->|Yes| System[System Testing]
+    System --> SysPass{All Pass?}
+    SysPass -->|No| FixSys[Fix System Issues]
+    FixSys --> System
+    SysPass -->|Yes| Parallel[Parallel Testing]
+    Parallel --> Compare[Compare Outputs]
+    Compare --> Match{Outputs Match?}
+    Match -->|No| Investigate[Investigate Differences]
+    Investigate --> FixDiff[Fix Differences]
+    FixDiff --> Parallel
+    Match -->|Yes| UAT[User Acceptance Testing]
+    UAT --> UATPass{UAT Passed?}
+    UATPass -->|No| FixUAT[Address UAT Issues]
+    FixUAT --> UAT
+    UATPass -->|Yes| Performance[Performance Testing]
+    Performance --> PerfOK{Performance OK?}
+    PerfOK -->|No| Optimize[Optimize]
+    Optimize --> Performance
+    PerfOK -->|Yes| End([Testing Complete])
+    
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style UnitPass fill:#FFD700
+    style IntPass fill:#FFD700
+    style SysPass fill:#FFD700
+    style Match fill:#FFD700
+    style UATPass fill:#FFD700
+    style PerfOK fill:#FFD700
+

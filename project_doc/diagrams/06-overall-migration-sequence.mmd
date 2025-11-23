@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant PM as Project Manager
+    participant BA as Business Analyst
+    participant Dev as Development Team
+    participant QA as QA Team
+    participant Ops as Operations Team
+    participant User as Business Users
+    
+    PM->>BA: Initiate Discovery Phase
+    BA->>BA: Inventory COBOL Components
+    BA->>User: Interview Business Users
+    BA->>PM: Discovery Report
+    
+    PM->>Dev: Initiate Planning Phase
+    Dev->>Dev: Design Architecture
+    Dev->>PM: Architecture Design
+    
+    PM->>Dev: Initiate Development Phase
+    Dev->>Dev: Setup Environment
+    Dev->>Dev: Migrate Code
+    Dev->>QA: Deliver Code
+    
+    QA->>QA: Unit Testing
+    QA->>QA: Integration Testing
+    QA->>QA: System Testing
+    QA->>User: UAT
+    User->>QA: UAT Feedback
+    QA->>PM: Test Results
+    
+    PM->>Ops: Initiate Deployment
+    Ops->>Ops: Deploy to Production
+    Ops->>User: System Available
+    User->>Ops: Production Issues
+    Ops->>Dev: Escalate Issues
+    Dev->>Ops: Fix Issues
+    Ops->>PM: Deployment Complete
+

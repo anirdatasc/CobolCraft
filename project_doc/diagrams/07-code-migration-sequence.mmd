@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Analyst as Business Analyst
+    participant Architect as Solution Architect
+    participant Developer as Developer
+    participant Reviewer as Code Reviewer
+    participant Tester as Tester
+    
+    Analyst->>Architect: Provide COBOL Program
+    Architect->>Architect: Analyze COBOL Code
+    Architect->>Architect: Design Java Structure
+    Architect->>Developer: Provide Design Spec
+    
+    Developer->>Developer: Implement Java Code
+    Developer->>Reviewer: Submit for Review
+    Reviewer->>Developer: Review Comments
+    Developer->>Developer: Fix Issues
+    Developer->>Reviewer: Resubmit
+    Reviewer->>Developer: Approval
+    
+    Developer->>Tester: Deliver Code
+    Tester->>Tester: Write Unit Tests
+    Tester->>Tester: Execute Tests
+    Tester->>Developer: Test Results
+    Developer->>Developer: Fix Defects
+    Developer->>Tester: Updated Code
+    Tester->>Tester: Retest
+    Tester->>Analyst: Test Passed
+

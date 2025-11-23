@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COBOL to Java Migration Strategy - Interactive Viewer</title>
+    
+    <!-- Mermaid.js for diagram rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <!-- Marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11/marked.min.js"></script>
+    
+    <!-- Prism.js for code syntax highlighting -->
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: #2d3748;
+            color: white;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #4a5568;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .diagram-list {
+            list-style: none;
+        }
+        
+        .diagram-list li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .diagram-list a {
+            color: #cbd5e0;
+            text-decoration: none;
+            padding: 0.5rem;
+            display: block;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .diagram-list a:hover {
+            background-color: #4a5568;
+            color: white;
+        }
+        
+        .diagram-list a.active {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .controls {
+            padding: 1rem 2rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .controls button {
+            padding: 0.5rem 1rem;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        
+        .controls button:hover {
+            background-color: #5568d3;
+        }
+        
+        .controls .file-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .view-toggle button {
+            padding: 0.5rem 1rem;
+            background-color: #e2e8f0;
+            color: #2d3748;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .view-toggle button.active {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .content-view {
+            display: none;
+        }
+        
+        .content-view.active {
+            display: block;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            color: #0366d6;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            border-left: 4px solid #0366d6;
+        }
+        
+        .error {
+            background-color: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            border-left: 4px solid #c33;
+        }
+        
+        /* Markdown content styling */
+        .markdown-body {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .markdown-body h1 {
+            font-size: 2.25em;
+            border-bottom: 2px solid #eaecef;
+            padding-bottom: 0.3em;
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .markdown-body h2 {
+            font-size: 1.75em;
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .markdown-body h3 {
+            font-size: 1.5em;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .markdown-body h4 {
+            font-size: 1.25em;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .markdown-body p {
+            margin-bottom: 16px;
+        }
+        
+        .markdown-body ul, .markdown-body ol {
+            margin-bottom: 16px;
+            padding-left: 2em;
+        }
+        
+        .markdown-body li {
+            margin-bottom: 0.25em;
+        }
+        
+        .markdown-body code {
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-size: 85%;
+            margin: 0;
+            padding: 0.2em 0.4em;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+        
+        .markdown-body pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            font-size: 85%;
+            line-height: 1.45;
+            overflow: auto;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .markdown-body pre code {
+            background-color: transparent;
+            border: 0;
+            display: inline;
+            line-height: inherit;
+            margin: 0;
+            overflow: visible;
+            padding: 0;
+            word-wrap: normal;
+        }
+        
+        .markdown-body blockquote {
+            border-left: 4px solid #dfe2e5;
+            color: #6a737d;
+            padding: 0 1em;
+            margin: 0 0 16px 0;
+        }
+        
+        .markdown-body table {
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        
+        .markdown-body table th,
+        .markdown-body table td {
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }
+        
+        .markdown-body table th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }
+        
+        .markdown-body hr {
+            background-color: #e1e4e8;
+            border: 0;
+            height: 0.25em;
+            margin: 24px 0;
+        }
+        
+        .markdown-body strong {
+            font-weight: 600;
+        }
+        
+        .markdown-body em {
+            font-style: italic;
+        }
+        
+        /* Diagram viewer */
+        .diagram-viewer {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .diagram-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        .diagram-container {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mermaid {
+            text-align: center;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        .diagram-description {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f6f8fa;
+            border-radius: 4px;
+            color: #586069;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 200px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .sidebar, .controls {
+                display: none;
+            }
+            .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>COBOL to Java Migration Strategy</h1>
+        <p>Interactive Documentation Viewer with Diagrams</p>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h3>📄 Document</h3>
+                <ul class="diagram-list">
+                    <li><a href="#" onclick="showView('document'); return false;" class="active" id="nav-document">Full Document</a></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>📊 Process Flowcharts</h3>
+                <ul class="diagram-list">
+                    <li><a href="#" onclick="loadDiagram('01-high-level-migration-process.mmd', 'High-Level Migration Process'); return false;" id="nav-01">1. High-Level Process</a></li>
+                    <li><a href="#" onclick="loadDiagram('02-detailed-migration-workflow.mmd', 'Detailed Migration Workflow'); return false;" id="nav-02">2. Detailed Workflow</a></li>
+                    <li><a href="#" onclick="loadDiagram('03-code-migration-process.mmd', 'Code Migration Process'); return false;" id="nav-03">3. Code Migration</a></li>
+                    <li><a href="#" onclick="loadDiagram('04-testing-strategy-flow.mmd', 'Testing Strategy Flow'); return false;" id="nav-04">4. Testing Strategy</a></li>
+                    <li><a href="#" onclick="loadDiagram('05-risk-management-process.mmd', 'Risk Management Process'); return false;" id="nav-05">5. Risk Management</a></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>🔄 Sequence Diagrams</h3>
+                <ul class="diagram-list">
+                    <li><a href="#" onclick="loadDiagram('06-overall-migration-sequence.mmd', 'Overall Migration Sequence'); return false;" id="nav-06">6. Overall Sequence</a></li>
+                    <li><a href="#" onclick="loadDiagram('07-code-migration-sequence.mmd', 'Code Migration Sequence'); return false;" id="nav-07">7. Code Migration Seq</a></li>
+                    <li><a href="#" onclick="loadDiagram('08-parallel-testing-sequence.mmd', 'Parallel Testing Sequence'); return false;" id="nav-08">8. Parallel Testing</a></li>
+                    <li><a href="#" onclick="loadDiagram('09-deployment-sequence.mmd', 'Deployment Sequence'); return false;" id="nav-09">9. Deployment Sequence</a></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>📈 Additional Diagrams</h3>
+                <ul class="diagram-list">
+                    <li><a href="#" onclick="loadDiagram('10-migration-phases-timeline.mmd', 'Migration Phases Timeline'); return false;" id="nav-10">10. Timeline (Gantt)</a></li>
+                    <li><a href="#" onclick="loadDiagram('11-team-roles-responsibilities.mmd', 'Team Roles & Responsibilities'); return false;" id="nav-11">11. Team Structure</a></li>
+                    <li><a href="#" onclick="loadDiagram('12-data-migration-flow.mmd', 'Data Migration Flow'); return false;" id="nav-12">12. Data Migration</a></li>
+                    <li><a href="#" onclick="loadDiagram('13-architecture-overview.mmd', 'Architecture Overview'); return false;" id="nav-13">13. Architecture</a></li>
+                    <li><a href="#" onclick="loadDiagram('14-documentation-flow.mmd', 'Documentation Flow'); return false;" id="nav-14">14. Documentation</a></li>
+                    <li><a href="#" onclick="loadDiagram('15-migration-strategy-comparison.mmd', 'Migration Strategy Comparison'); return false;" id="nav-15">15. Strategy Comparison</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="controls">
+                <div class="file-input-wrapper">
+                    <label for="fileInput" style="margin-right: 0.5rem;">Load Markdown:</label>
+                    <input type="file" id="fileInput" accept=".md,.markdown" />
+                </div>
+                <div class="view-toggle">
+                    <button onclick="showView('document')" id="btn-document" class="active">Document</button>
+                    <button onclick="showView('diagram')" id="btn-diagram">Diagram</button>
+                </div>
+                <div>
+                    <button onclick="window.print()">Print</button>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Document View -->
+                <div id="documentView" class="content-view active">
+                    <div id="loading" class="loading">Loading document...</div>
+                    <div id="error" class="info-box" style="display: none;"></div>
+                    <div id="markdownContent" class="markdown-body" style="display: none;"></div>
+                </div>
+                
+                <!-- Diagram View -->
+                <div id="diagramView" class="content-view">
+                    <div class="diagram-viewer">
+                        <div class="diagram-title" id="diagramTitle">Select a diagram from the sidebar</div>
+                        <div class="diagram-container" id="diagramContainer">
+                            <div style="text-align: center; color: #999;">
+                                <p>👈 Choose a diagram from the sidebar to view it here</p>
+                            </div>
+                        </div>
+                        <div class="diagram-description" id="diagramDescription"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                diagramMarginX: 50,
+                diagramMarginY: 10,
+                actorMargin: 50,
+                width: 150,
+                height: 65,
+                boxMargin: 10,
+                boxTextMargin: 5,
+                noteMargin: 10,
+                messageMargin: 35,
+                mirrorActors: true,
+                bottomMargin: 50,
+                leftMargin: 75,
+                rightMargin: 75,
+                useMaxWidth: true
+            },
+            gantt: {
+                useMaxWidth: true
+            }
+        });
+
+        // Configure Marked.js
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            mangle: false
+        });
+
+        // Custom renderer for code blocks to handle Mermaid
+        const renderer = new marked.Renderer();
+        const originalCode = renderer.code.bind(renderer);
+        
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid">${code}</div>`;
+            }
+            return originalCode(code, language);
+        };
+
+        // View management
+        function showView(viewType) {
+            document.getElementById('documentView').classList.toggle('active', viewType === 'document');
+            document.getElementById('diagramView').classList.toggle('active', viewType === 'diagram');
+            document.getElementById('btn-document').classList.toggle('active', viewType === 'document');
+            document.getElementById('btn-diagram').classList.toggle('active', viewType === 'diagram');
+            
+            // Update nav
+            document.querySelectorAll('.diagram-list a').forEach(a => a.classList.remove('active'));
+            if (viewType === 'document') {
+                document.getElementById('nav-document').classList.add('active');
+            }
+        }
+
+        // Load and render markdown
+        async function loadMarkdown(markdownText) {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('markdownContent').style.display = 'none';
+
+                const html = marked.parse(markdownText, { renderer: renderer });
+                
+                document.getElementById('markdownContent').innerHTML = html;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('markdownContent').style.display = 'block';
+
+                await renderMermaidDiagrams();
+                Prism.highlightAll();
+                window.scrollTo(0, 0);
+            } catch (error) {
+                console.error('Error loading markdown:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Error loading document: ' + error.message;
+            }
+        }
+
+        // Render Mermaid diagrams in markdown
+        async function renderMermaidDiagrams() {
+            const mermaidElements = document.querySelectorAll('.mermaid');
+            for (let i = 0; i < mermaidElements.length; i++) {
+                const element = mermaidElements[i];
+                const id = 'mermaid-' + i;
+                element.id = id;
+                try {
+                    await mermaid.run({
+                        nodes: [element],
+                        suppressErrors: true
+                    });
+                } catch (error) {
+                    console.error('Error rendering Mermaid diagram:', error);
+                    element.innerHTML = '<p style="color: red;">Error rendering diagram.</p>';
+                }
+            }
+        }
+
+        // Load and display a standalone diagram
+        async function loadDiagram(filename, title) {
+            try {
+                showView('diagram');
+                document.getElementById('diagramTitle').textContent = title;
+                document.getElementById('diagramContainer').innerHTML = '<div class="loading">Loading diagram...</div>';
+                document.getElementById('diagramDescription').textContent = '';
+
+                // Try to load from diagrams directory
+                const path = `diagrams/${filename}`;
+                const response = await fetch(path);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load diagram: ${response.status}`);
+                }
+                
+                const diagramCode = await response.text();
+                
+                // Create a new div for the diagram
+                const diagramDiv = document.createElement('div');
+                diagramDiv.className = 'mermaid';
+                diagramDiv.id = 'standalone-diagram';
+                diagramDiv.textContent = diagramCode;
+                
+                document.getElementById('diagramContainer').innerHTML = '';
+                document.getElementById('diagramContainer').appendChild(diagramDiv);
+                
+                // Render the diagram
+                try {
+                    await mermaid.run({
+                        nodes: [diagramDiv],
+                        suppressErrors: true
+                    });
+                } catch (error) {
+                    console.error('Error rendering diagram:', error);
+                    document.getElementById('diagramContainer').innerHTML = 
+                        '<div style="color: red; padding: 2rem;">Error rendering diagram. Please check the Mermaid syntax.</div>';
+                }
+                
+                // Update navigation
+                document.querySelectorAll('.diagram-list a').forEach(a => a.classList.remove('active'));
+                const navId = 'nav-' + filename.substring(0, 2);
+                const navElement = document.getElementById(navId);
+                if (navElement) {
+                    navElement.classList.add('active');
+                }
+                
+            } catch (error) {
+                console.error('Error loading diagram:', error);
+                document.getElementById('diagramContainer').innerHTML = 
+                    '<div class="error">Error loading diagram: ' + error.message + 
+                    '<br><br>Please ensure you are opening this file from a web server, or use the file input to load the markdown file which contains embedded diagrams.</div>';
+            }
+        }
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    loadMarkdown(e.target.result);
+                    showView('document');
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Show instructions on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').innerHTML = 
+                '<strong>📄 How to use this viewer:</strong><br><br>' +
+                '1. <strong>View Diagrams:</strong> Click any diagram name in the sidebar to view it<br>' +
+                '2. <strong>Load Document:</strong> Use "Choose File" to load <code>cobol_to_java_strategy.md</code><br>' +
+                '3. <strong>Toggle Views:</strong> Switch between Document and Diagram views using the buttons above<br><br>' +
+                '<em>Note: Diagrams work best when opened from a web server. For local files, load the markdown document which contains embedded diagrams.</em>';
+        });
+    </script>
+</body>
+</html>
